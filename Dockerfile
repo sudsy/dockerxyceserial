@@ -1,17 +1,39 @@
-FROM amazonlinux:1 as xycebuilddeps
-
-LABEL maintainer="sudsy"
-
-RUN yum -y update
-RUN yum install -y software-properties-common wget
-
-RUN yum -y upgrade
-
-RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN yum install -y epel-release yum-utils
-RUN yum-config-manager --enable epel
-RUN yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mkl.repo
-RUN yum groupinstall -y "Development Tools"
-RUN yum install -y lapack-devel hdf5-devel graphviz cmake suitesparse-devel netcdf-devel fftw-devel
 
 
+#Now Build Xyce
+FROM sudsy/xyceserial:amzn1-trilinos as buildxyce
+
+RUN git clone -b 'Release-6.11.1' --single-branch --depth 1 https://github.com/Xyce/Xyce.git
+WORKDIR /Xyce
+RUN ./bootstrap
+RUN mkdir build
+WORKDIR /Xyce/build
+
+
+RUN ../configure \
+ARCHDIR=$HOME/XyceLibs/Serial \
+--disable-adms_sensitivities \
+LDFLAGS="-Wl,-rpath,../lib" \
+CXXFLAGS="-O3 -std=c++11" \
+CPPFLAGS="-I/usr/include/suitesparse" \
+CC=/usr/bin/gcc \
+CXX=/usr/bin/g++ \
+F77=/usr/bin/gfortran \
+--prefix=/usr/local/bin/xyce-serial
+
+RUN make -j2
+RUN make install
+
+
+RUN cp /usr/lib64/libfftw3.so.3 /usr/local/bin/xyce-serial/lib
+RUN cp /usr/lib64/libamd.so.2 /usr/local/bin/xyce-serial/lib
+RUN cp /usr/lib64/liblapack.so.3 /usr/local/bin/xyce-serial/lib
+RUN cp /usr/lib64/libblas.so.3 /usr/local/bin/xyce-serial/lib
+RUN cp /usr/lib64/libgfortran.so.3 /usr/local/bin/xyce-serial/lib
+RUN cp /usr/lib64/libquadmath.so.0 /usr/local/bin/xyce-serial/lib
+
+
+FROM amazonlinux:1 as deploy
+COPY --from=buildxyce /usr/local/bin/xyce-serial /usr/local/bin/xyce-serial
+WORKDIR /usr/local/bin/xyce-serial/bin
+ENTRYPOINT ["/usr/local/bin/xyce-serial/bin/Xyce"]
