@@ -3,6 +3,7 @@
 #Now Build Xyce
 FROM sudsy/xyceserial:amzn1-trilinos as buildxyce
 
+WORKDIR /
 RUN git clone -b 'Release-6.11.1' --single-branch --depth 1 https://github.com/Xyce/Xyce.git
 WORKDIR /Xyce
 RUN ./bootstrap
