@@ -1,4 +1,4 @@
-FROM amazonlinux:1 as buildxyce
+FROM centos:7 as buildxyce
 
 LABEL maintainer="sudsy"
 
@@ -7,7 +7,7 @@ RUN yum install -y software-properties-common wget
 
 RUN yum -y upgrade
 
-RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+RUN yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum install -y epel-release yum-utils
 RUN yum-config-manager --enable epel
 RUN yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mkl.repo
@@ -100,7 +100,7 @@ RUN cp /usr/lib64/libgfortran.so.3 /usr/local/bin/xyce-serial/lib
 RUN cp /usr/lib64/libquadmath.so.0 /usr/local/bin/xyce-serial/lib
 
 
-FROM amazonlinux:1 as deploy
+FROM registry.access.redhat.com/ubi7/ubi-minimal as deploy
 COPY --from=buildxyce /usr/local/bin/xyce-serial /usr/local/bin/xyce-serial
 WORKDIR /usr/local/bin/xyce-serial/bin
 ENTRYPOINT ["/usr/local/bin/xyce-serial/bin/Xyce"]
