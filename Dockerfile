@@ -1,4 +1,4 @@
-FROM amazonlinux:2 as xycebuilddeps
+FROM amazonlinux:2 
 
 LABEL maintainer="sudsy"
 
@@ -14,8 +14,6 @@ RUN yum-config-manager --add-repo https://yum.repos.intel.com/mkl/setup/intel-mk
 RUN yum groupinstall -y "Development Tools"
 RUN yum install -y lapack-devel hdf5-devel graphviz cmake suitesparse-devel netcdf-devel fftw-devel
 
-FROM xycebuilddeps as trilinos
-
 # Build Trilinos Serial
 RUN wget https://github.com/trilinos/Trilinos/archive/trilinos-release-12-12-1.tar.gz
 RUN tar -xf trilinos-release-12-12-1.tar.gz
@@ -23,7 +21,6 @@ RUN pwd
 WORKDIR /Trilinos-trilinos-release-12-12-1
 RUN mkdir build
 WORKDIR /Trilinos-trilinos-release-12-12-1/build
-
 
 
 ENV ARCHDIR=$HOME/XyceLibs/Serial
@@ -71,7 +68,6 @@ RUN make -j2
 RUN make install
 
 #Now Build Xyce
-FROM trilinos as buildxyce
 
 WORKDIR /
 RUN git clone -b 'Release-7.5.0' --single-branch --depth 1 https://github.com/Xyce/Xyce.git
@@ -104,7 +100,7 @@ RUN cp /usr/lib64/libgfortran.so.3 /usr/local/bin/xyce-serial/lib
 RUN cp /usr/lib64/libquadmath.so.0 /usr/local/bin/xyce-serial/lib
 
 
-# FROM amazonlinux:2 as deploy
-# COPY --from=buildxyce /usr/local/bin/xyce-serial /usr/local/bin/xyce-serial
-# WORKDIR /usr/local/bin/xyce-serial/bin
-# ENTRYPOINT ["/usr/local/bin/xyce-serial/bin/Xyce"]
+FROM amazonlinux:2 as deploy
+COPY --from=buildxyce /usr/local/bin/xyce-serial /usr/local/bin/xyce-serial
+WORKDIR /usr/local/bin/xyce-serial/bin
+ENTRYPOINT ["/usr/local/bin/xyce-serial/bin/Xyce"]
