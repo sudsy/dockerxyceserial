@@ -1,4 +1,4 @@
-FROM amazonlinux:2 
+FROM amazonlinux:2 as buildxyce
 
 LABEL maintainer="sudsy"
 
