@@ -96,7 +96,7 @@ RUN cp /usr/lib64/libfftw3.so.3 /usr/local/bin/xyce-serial/lib
 RUN cp /usr/lib64/libamd.so.2 /usr/local/bin/xyce-serial/lib
 RUN cp /usr/lib64/liblapack.so.3 /usr/local/bin/xyce-serial/lib
 RUN cp /usr/lib64/libblas.so.3 /usr/local/bin/xyce-serial/lib
-RUN cp /usr/lib64/libgfortran.so.3 /usr/local/bin/xyce-serial/lib
+RUN cp /usr/lib64/libgfortran.so.4 /usr/local/bin/xyce-serial/lib
 RUN cp /usr/lib64/libquadmath.so.0 /usr/local/bin/xyce-serial/lib
 
 
